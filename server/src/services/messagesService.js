@@ -1,6 +1,7 @@
 'use strict';
 
 const prisma = require('../prismaClient');
+const { broadcast } = require('../realtime');
 
 function listMessages(roomId) {
   return prisma.message.findMany({
@@ -9,8 +10,14 @@ function listMessages(roomId) {
   });
 }
 
-function createMessage(roomId, author, text) {
-  return prisma.message.create({ data: { author, text, roomId } });
+async function createMessage(roomId, author, text) {
+  const message = await prisma.message.create({
+    data: { author, text, roomId },
+  });
+
+  broadcast('message:created', message);
+
+  return message;
 }
 
 module.exports = { listMessages, createMessage };

@@ -1,6 +1,7 @@
 'use strict';
 
 const prisma = require('../prismaClient');
+const { broadcast } = require('../realtime');
 
 const DEFAULT_ROOM = 'general';
 
@@ -8,16 +9,26 @@ function listRooms() {
   return prisma.room.findMany({ orderBy: { createdAt: 'asc' } });
 }
 
-function createRoom(name) {
-  return prisma.room.create({ data: { name } });
+async function createRoom(name) {
+  const room = await prisma.room.create({ data: { name } });
+
+  broadcast('room:created', room);
+
+  return room;
 }
 
-function renameRoom(id, name) {
-  return prisma.room.update({ where: { id }, data: { name } });
+async function renameRoom(id, name) {
+  const room = await prisma.room.update({ where: { id }, data: { name } });
+
+  broadcast('room:updated', room);
+
+  return room;
 }
 
-function deleteRoom(id) {
-  return prisma.room.delete({ where: { id } });
+async function deleteRoom(id) {
+  await prisma.room.delete({ where: { id } });
+
+  broadcast('room:deleted', { id });
 }
 
 function ensureDefaultRoom() {
