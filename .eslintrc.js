@@ -7,5 +7,8 @@ module.exports = {
     'no-proto': 0,
     'no-console': 0
   },
-  plugins: ['jest']
+  plugins: ['jest'],
+  // client/ is a separate React app (browser globals, JSX) linted by its own
+  // oxlint config - this Node-oriented config would false-positive on it.
+  ignorePatterns: ['client/']
 };
